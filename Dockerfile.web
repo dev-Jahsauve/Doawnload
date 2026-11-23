@@ -1,0 +1,22 @@
+# --- Build du frontend Next.js ---
+FROM node:20-bookworm-slim AS build
+WORKDIR /app
+
+COPY web/package*.json ./
+RUN npm install
+
+COPY web/ ./
+ARG API_ORIGIN=http://server:4000
+ENV API_ORIGIN=$API_ORIGIN
+RUN npm run build
+
+# --- Image finale minimale (sortie standalone) ---
+FROM node:20-bookworm-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production PORT=3000
+
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+
+EXPOSE 3000
+CMD ["node", "server.js"]
