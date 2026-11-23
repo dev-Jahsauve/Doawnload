@@ -2,10 +2,13 @@
 FROM node:20-bookworm-slim AS build
 WORKDIR /app
 
-COPY web/package*.json ./
+COPY package.json package-lock.json ./
 RUN npm install
 
-COPY web/ ./
+COPY app ./app
+COPY components ./components
+COPY lib ./lib
+COPY next.config.mjs postcss.config.mjs tailwind.config.ts tsconfig.json ./
 ARG API_ORIGIN=http://server:4000
 ENV API_ORIGIN=$API_ORIGIN
 RUN npm run build

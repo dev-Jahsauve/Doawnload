@@ -27,11 +27,10 @@ Navigateur ── /api/* (rewrite Next.js, même origine) ──▶ API Fastify
 ## Structure
 
 ```
-server/            API Fastify + worker + provider yt-dlp
-  src/routes/      analyze, download, jobs (statut + fichier)
-  src/jobs/        worker BullMQ + purge
-  src/services/    DownloadProvider (interface) + YtDlpProvider
-web/               Next.js 14 + Tailwind + Framer Motion
+app/               frontend Next.js 14 (page d'accueil, historique, routes API serverless)
+components/        composants React (motion design, pubs, formulaire)
+lib/               client API, historique local, extracteur + rate limit serverless
+server/            API Fastify + worker BullMQ + provider yt-dlp (mode VPS complet)
 Dockerfile.web     frontend (build standalone)
 Dockerfile.server  API et worker (Node + yt-dlp + ffmpeg)
 docker-compose.yml redis + server + worker + web
@@ -53,10 +52,11 @@ L'application est sur http://localhost:3000.
 Prérequis : Node 20+, Python 3 (`pip install yt-dlp`), ffmpeg, Redis en cours d'exécution.
 
 ```bash
-npm install
-npm run dev:server    # API sur :4000
-npm run dev:worker    # worker + purge
-npm run dev:web       # frontend sur :3000
+npm install                 # frontend (Next.js)
+npm run install:server      # dépendances de server/
+npm run dev                 # frontend sur :3000
+npm run dev:server          # API sur :4000
+npm run dev:worker          # worker + purge
 ```
 
 ### Variables d'environnement
@@ -82,7 +82,7 @@ Sur Vercel, le worker yt-dlp et Redis locaux ne peuvent pas tourner : l'applicat
 Étapes :
 
 1. Clique sur le bouton (ou ouvre [vercel.com/new](https://vercel.com/new) et importe `dev-Jahsauve/Doawnload`).
-2. **Root Directory** : `web` (Next.js est détecté automatiquement).
+2. Framework : **Next.js** (détecté automatiquement, l'app est à la racine du dépôt).
 3. Variables d'environnement (obligatoires pour le mode direct) :
 
 | Variable | Valeur |
