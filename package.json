@@ -1,0 +1,19 @@
+{
+  "name": "smartdownload",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SmartDownload — téléchargement de vidéos à partir d'un simple lien",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace web",
+    "dev:server": "npm run dev --workspace server",
+    "dev:worker": "npm run worker --workspace server",
+    "build": "npm run build --workspace server && npm run build --workspace web",
+    "start:server": "npm run start --workspace server",
+    "start:worker": "npm run start:worker --workspace server",
+    "start:web": "npm run start --workspace web"
+  }
+}

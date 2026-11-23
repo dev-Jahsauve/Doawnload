@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #fafaf9;
+  --card: #ffffff;
+  --ink: #14181b;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --accent: #0d9488;
+  --accent-soft: rgba(13, 148, 136, 0.12);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0c0f11;
+  --card: #12161a;
+  --ink: #f3f5f6;
+  --muted: #9aa3ab;
+  --line: #232a30;
+  --accent: #2dd4bf;
+  --accent-soft: rgba(45, 212, 191, 0.12);
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@keyframes ad-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.ad-placeholder {
+  animation: ad-pulse 2.4s ease-in-out infinite;
+}
