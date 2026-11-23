@@ -73,6 +73,41 @@ Voir `.env.example`. Les principales :
 | `NEXT_PUBLIC_ADSTERRA_BANNER_KEY` | clé bannière Adsterra | vide |
 | `NEXT_PUBLIC_ADSTERRA_PRIORITY_KEY` | clé interstitiel Adsterra | vide |
 
+## Déploiement sur Vercel (mode serverless)
+
+Sur Vercel, le worker yt-dlp et Redis locaux ne peuvent pas tourner : l'application dispose d'un **mode direct** — les routes API serverless appellent un extracteur HTTP et renvoient un lien de média livré immédiatement au navigateur (aucun fichier stocké, pas de file d'attente).
+
+[![Déployer avec Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdev-Jahsauve%2FDoawnload&project-name=smartdownload)
+
+Étapes :
+
+1. Clique sur le bouton (ou ouvre [vercel.com/new](https://vercel.com/new) et importe `dev-Jahsauve/Doawnload`).
+2. **Root Directory** : `web` (Next.js est détecté automatiquement).
+3. Variables d'environnement (obligatoires pour le mode direct) :
+
+| Variable | Valeur |
+|---|---|
+| `EXTRACT_PROVIDER` | `cobalt` ou `rapidapi` |
+| `EXTRACT_API_URL` | URL de l'instance/endpoint d'extraction |
+| `EXTRACT_API_KEY` | clé API de l'extracteur (optionnelle pour une instance Cobalt publique) |
+| `EXTRACT_API_HEADER` | (RapidAPI custom) nom d'en-tête si l'API n'utilise pas `x-rapidapi-key` |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | compte gratuit [Upstash](https://upstash.com) pour un rate limit partagé entre instances |
+
+Fournisseurs d'extraction recommandés pour ce mode :
+
+- **Cobalt** (gratuit, open source) : `EXTRACT_PROVIDER=cobalt` + URL d'une instance ; instance dédiée recommandée en production, aucun fichier stocké par l'instance.
+- **RapidAPI** : tout endpoint du type "social video downloader" renvoyant un JSON contenant l'URL du média ; l'adaptateur balaie la réponse et choisit la meilleure prochaine selon la qualité demandée.
+
+Sans extracteur configuré, le frontend proxifie vers `API_ORIGIN` : tu peux garder Vercel pour l'interface et héberger l'API complète (worker yt-dlp + Redis) sur un VPS.
+
+Mode VPS vs Vercel :
+
+| | VPS (Docker) | Vercel (serverless) |
+|---|---|---|
+| Téléchargement | réel, format garanti, progression | lien direct fourni par l'extracteur |
+| Priorité après pub | file BullMQ réelle | pas de file (simulée côté UI) |
+| Coût | ~5 $/mois | gratuit (quota Vercel + Upstash) |
+
 ## Déploiement sur VPS
 
 1. Privilégie une offre avec beaucoup de trafic sortant (Hetzner, OVH, Contabo) : ce service consomme de la bande passante.

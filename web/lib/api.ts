@@ -44,10 +44,15 @@ export interface JobState {
   failedReason: string | null;
 }
 
+export interface DirectDownload {
+  direct: true;
+  url: string;
+}
+
 export const api = {
   analyze: (url: string) => send<{ info: VideoInfo }>("/api/analyze", { url }),
   requestDownload: (payload: { url: string; formatId: string; priority: boolean; title?: string }) =>
-    send<{ jobId: string }>("/api/download", payload),
+    send<{ jobId: string } | DirectDownload>("/api/download", payload),
   async job(jobId: string): Promise<JobState> {
     const res = await fetch(`/api/jobs/${jobId}`);
     const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;

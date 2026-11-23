@@ -46,12 +46,22 @@ export default function DownloadFlow() {
       setProgress(0);
 
       try {
-        const { jobId } = await api.requestDownload({
+        const response = await api.requestDownload({
           url,
           formatId: format.id,
           priority,
           title: info.title,
         });
+
+        // Mode serverless (Vercel) : l'extracteur renvoie un lien direct, sans tache ni polling.
+        if ("direct" in response && response.url) {
+          addHistory({ title: info.title, format: format.label, thumbnail: info.thumbnail, url });
+          setPhase("done");
+          window.location.href = response.url;
+          return;
+        }
+
+        const { jobId } = response as { jobId: string };
         jobIdRef.current = jobId;
 
         const poll = setInterval(async () => {
