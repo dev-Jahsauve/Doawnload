@@ -8,3 +8,4 @@ build/
 tmp/
 downloads/
 .vercel/
+*.tsbuildinfo
