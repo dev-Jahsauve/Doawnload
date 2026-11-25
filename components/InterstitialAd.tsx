@@ -86,7 +86,7 @@ export default function InterstitialAd({ open, onComplete, onCancel }: Interstit
               type="button"
               disabled={!adSeen}
               onClick={onComplete}
-              className="mt-5 w-full rounded-xl bg-accent px-4 py-3 font-medium text-white transition disabled:opacity-40"
+              className="mt-5 w-full rounded-xl bg-accent px-4 py-3 font-medium text-[color:var(--accent-ink)] transition disabled:opacity-40"
             >
               {adSeen ? "Lancer le téléchargement" : `Prière de patienter… ${seconds} s`}
             </button>

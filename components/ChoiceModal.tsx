@@ -38,10 +38,10 @@ export default function ChoiceModal({ open, onStandard, onPriority, onClose }: C
               <button
                 type="button"
                 onClick={onPriority}
-                className="w-full rounded-xl bg-accent px-4 py-3.5 text-left text-white transition-transform hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full rounded-xl bg-accent px-4 py-3.5 text-left text-[color:var(--accent-ink)] transition-transform hover:scale-[1.01] active:scale-[0.99]"
               >
                 <span className="block font-medium">Téléchargement prioritaire</span>
-                <span className="mt-0.5 block text-sm text-white/80">Regarde une pub : ta demande passe devant la file.</span>
+                <span className="mt-0.5 block text-sm text-[color:var(--accent-ink)]/75">Regarde une pub : ta demande passe devant la file.</span>
               </button>
 
               <button

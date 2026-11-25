@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandSignature } from "./BrandSignature";
 
 export default function Footer() {
   return (
@@ -14,6 +15,7 @@ export default function Footer() {
           <Link href="/historique" className="hover:text-ink">Historique</Link>
         </nav>
         <p className="text-xs text-muted">© {new Date().getFullYear()} SmartDownload</p>
+        <BrandSignature />
       </div>
     </footer>
   );

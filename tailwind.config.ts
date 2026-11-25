@@ -13,12 +13,13 @@ const config: Config = {
         line: "var(--line)",
         accent: "var(--accent)",
         "accent-soft": "var(--accent-soft)",
+        "accent-ink": "var(--accent-ink)",
       },
       fontFamily: {
         sans: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "Inter", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
       },
       boxShadow: {
-        card: "0 1px 2px rgba(0,0,0,.04), 0 12px 32px -12px rgba(0,0,0,.12)",
+        card: "var(--shadow)",
       },
     },
   },

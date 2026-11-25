@@ -54,7 +54,9 @@ async function processDownload(job: Job<DownloadJobData>): Promise<{ fileId: str
   );
 
   const fileId = randomUUID();
-  const filename = `${sanitizeFilename(info.title || job.data.title || "video")}.${ext}`;
+  // Signature de marque dans le nom du fichier livre (discret, prefixe standard).
+  const brand = "Eddition Smartebooks";
+  const filename = `${brand} - ${sanitizeFilename(info.title || job.data.title || "video")}.${ext}`;
   const ttl = (config.fileTypeTtlMinutes + 1) * 60;
 
   await redis

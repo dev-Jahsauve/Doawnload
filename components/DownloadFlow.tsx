@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ApiError, api, type VideoFormat, type VideoInfo } from "@/lib/api";
 import { isSupportedUrl } from "@/lib/platforms";
 import { addHistory } from "@/lib/history";
+import { BrandSignature } from "./BrandSignature";
 import ChoiceModal from "./ChoiceModal";
 import InterstitialAd from "./InterstitialAd";
 import ProgressBar from "./ProgressBar";
@@ -169,12 +170,12 @@ export default function DownloadFlow() {
               disabled={phase === "analyzing"}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              className="flex h-14 items-center justify-center gap-2 rounded-xl bg-accent px-6 font-medium text-white disabled:opacity-50"
+              className="flex h-14 items-center justify-center gap-2 rounded-xl bg-accent px-6 font-medium text-[color:var(--accent-ink)] disabled:opacity-50"
             >
               {phase === "analyzing" ? (
                 <>
                   <motion.span
-                    className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white"
+                    className="h-4 w-4 rounded-full border-2 border-[color:var(--accent-ink)]/30 border-t-[color:var(--accent-ink)]"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
                   />
@@ -200,9 +201,12 @@ export default function DownloadFlow() {
                     : "Téléchargement en cours..."
               }
             />
-            <button type="button" onClick={reset} className="mt-4 text-sm text-muted underline-offset-4 hover:text-ink hover:underline">
-              Nouveau téléchargement
-            </button>
+            <div className="mt-4 flex items-center justify-between">
+              <button type="button" onClick={reset} className="text-sm text-muted underline-offset-4 hover:text-ink hover:underline">
+                Nouveau téléchargement
+              </button>
+              <BrandSignature />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
