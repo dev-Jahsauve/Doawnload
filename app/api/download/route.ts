@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractorConfigured, extractMediaUrl } from "@/lib/server/extractor";
 import { consumeDownloadSlot } from "@/lib/server/rate-limit";
-import { parseAndValidateUrl } from "@/lib/server/validators";
+import { parseAndValidateUrl, detectPlatform } from "@/lib/server/validators";
+import { recordUsage } from "@/lib/server/stats";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const url = parseAndValidateUrl(raw);
+    await recordUsage("download", detectPlatform(url.hostname), clientIp(request));
     const result = await extractMediaUrl(url.toString(), {
       kind: formatId === "mp3" ? "audio" : "video",
       quality: QUALITY_IDS.has(formatId) ? (formatId as "1080" | "720" | "360") : undefined,

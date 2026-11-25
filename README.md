@@ -108,6 +108,21 @@ Mode VPS vs Vercel :
 | Priorité après pub | file BullMQ réelle | pas de file (simulée côté UI) |
 | Coût | ~5 $/mois | gratuit (quota Vercel + Upstash) |
 
+## Tableau de bord administrateur (`/admin`)
+
+Page réservée : `https://<ton-site>/admin` — protégée par la variable d'environnement
+`ADMIN_PASSWORD` (mot de passe dédié, défini par toi ; sans cette variable la page reste désactivée).
+
+Y sont visibles : liens analysés (total), téléchargements (total), visiteurs uniques
+(aujourd'hui et depuis le début), téléchargements par plateforme et activité des
+14 derniers jours (rafraîchissement auto 30 s).
+
+- **En production (Vercel)** : ajoute `ADMIN_PASSWORD` aux variables d'environnement ;
+  pour des compteurs fiables et partagés, ajoute aussi les 2 variables Upstash (sinon
+  le tableau tombe sur un repli mémoire non partagé et l'indique).
+- **En mode VPS** : même clé `ADMIN_PASSWORD` dans `docker-compose.yml` (déjà prévu),
+  stockage Redis natif.
+
 ## Déploiement sur VPS
 
 1. Privilégie une offre avec beaucoup de trafic sortant (Hetzner, OVH, Contabo) : ce service consomme de la bande passante.

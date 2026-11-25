@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractorConfigured } from "@/lib/server/extractor";
 import { fetchMetadata } from "@/lib/server/metadata";
 import { parseAndValidateUrl } from "@/lib/server/validators";
+import { clientIpFromHeaders, recordUsage } from "@/lib/server/stats";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
   try {
     const url = parseAndValidateUrl(raw);
     const meta = await fetchMetadata(url);
+    await recordUsage("analyze", meta.platform, clientIpFromHeaders(request.headers));
     return NextResponse.json({ info: { ...meta, formats: STATIC_FORMATS } });
   } catch (err) {
     return NextResponse.json(

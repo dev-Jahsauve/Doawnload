@@ -13,6 +13,7 @@ services:
     environment:
       PORT: 4000
       REDIS_URL: redis://redis:6379
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     volumes:
       - downloads:/app/server/downloads
     depends_on:
@@ -26,6 +27,7 @@ services:
     command: ["node", "dist/worker.js"]
     environment:
       REDIS_URL: redis://redis:6379
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       WORKER_CONCURRENCY: 2
     volumes:
       - downloads:/app/server/downloads

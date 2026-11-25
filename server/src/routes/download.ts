@@ -1,8 +1,9 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { downloadQueue } from "../queues.js";
-import { parseAndValidateUrl } from "../lib/urls.js";
-import { rateLimitHook } from "./analyze.js";
+import { parseAndValidateUrl, detectPlatform } from "../lib/urls.js";
+import { rateLimitHook, clientIp } from "./analyze.js";
+import { recordUsage } from "./admin.js";
 
 const downloadSchema = z.object({
   url: z.string().min(1),
@@ -19,7 +20,8 @@ export const downloadRoute: FastifyPluginAsync = async (app) => {
     }
 
     try {
-      parseAndValidateUrl(parsed.data.url); // rejet immédiat si domaine non autorisé
+      const validated = parseAndValidateUrl(parsed.data.url); // rejet immédiat si domaine non autorisé
+      await recordUsage("download", detectPlatform(validated.hostname), clientIp(req));
     } catch (err) {
       return reply.code(400).send({ error: err instanceof Error ? err.message : "Lien invalide." });
     }

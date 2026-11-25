@@ -4,6 +4,7 @@ import cors from "@fastify/cors";
 import { config } from "./config.js";
 import { analyzeRoute } from "./routes/analyze.js";
 import { downloadRoute } from "./routes/download.js";
+import { adminRoute } from "./routes/admin.js";
 import { jobRoutes } from "./routes/jobs.js";
 import { ensureDownloadsDir } from "./lib/storage.js";
 
@@ -19,6 +20,7 @@ app.get("/api/health", async () => ({ status: "ok", service: "smartdownload" }))
 await app.register(analyzeRoute);
 await app.register(downloadRoute);
 await app.register(jobRoutes);
+await app.register(adminRoute);
 
 await ensureDownloadsDir();
 

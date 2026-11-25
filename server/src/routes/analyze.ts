@@ -2,6 +2,7 @@ import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { config } from "../config.js";
 import { consumeDownloadSlot } from "../lib/rate-limit.js";
+import { recordUsage } from "./admin.js";
 
 const analyzeSchema = z.object({ url: z.string().min(1) });
 
@@ -37,6 +38,7 @@ export const analyzeRoute: FastifyPluginAsync = async (app) => {
     const { analyze } = await import("../routes/helpers.js");
     try {
       const info = await analyze(parsed.data.url);
+      await recordUsage("analyze", info.platform, clientIp(req));
       return reply.send({ info });
     } catch (err) {
       return reply.code(400).send({ error: errorToMessage(err) });
