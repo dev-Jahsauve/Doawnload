@@ -95,7 +95,7 @@ Sur Vercel, le worker yt-dlp et Redis locaux ne peuvent pas tourner : l'applicat
 
 Fournisseurs d'extraction recommandés pour ce mode :
 
-- **Cobalt** (gratuit, open source) : `EXTRACT_PROVIDER=cobalt` + URL d'une instance ; instance dédiée recommandée en production, aucun fichier stocké par l'instance.
+- **Cobalt** (gratuit, open source) : `EXTRACT_PROVIDER=cobalt` + URL d'une instance ; instance dédiée recommandée en production, aucun fichier stocké par l'instance. **👉 Guide complet d'auto-hébergement (Option A) : [`infra/cobalt/README.md`](infra/cobalt/README.md)** — déploiement Railway en ~5 minutes (template 1-clic https://railway.com/deploy/cobalt-tools--cobalt-tools), VPS `docker compose`, fichiers `infra/cobalt/docker-compose.yml` et `infra/cobalt/keys.json.example` prêts à l'emploi.
 - **RapidAPI** : tout endpoint du type "social video downloader" renvoyant un JSON contenant l'URL du média ; l'adaptateur balaie la réponse et choisit la meilleure prochaine selon la qualité demandée.
 
 Sans extracteur configuré, le frontend proxifie vers `API_ORIGIN` : tu peux garder Vercel pour l'interface et héberger l'API complète (worker yt-dlp + Redis) sur un VPS.

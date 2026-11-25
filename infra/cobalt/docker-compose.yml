@@ -1,0 +1,64 @@
+# Kit de deploiement d'une instance Cobalt auto-hebergee
+#
+# C'est cette URL publique qui alimentera SmartDownload :
+#   EXTRACT_PROVIDER=cobalt  +  EXTRACT_API_URL=https://<ton-domaine>/
+#
+# Usage (sur un VPS ou une machine avec Docker installe) :
+#   1. Remplace les valeurs <...> ci-dessous (API_URL est OBLIGATOIRE).
+#   2. docker compose up -d
+#   3. Test : curl https://<ton-domaine>/ doit renvoyer l'objet JSON cobalt.
+#
+# Sur Railway / Render, le mode le plus simple reste un deploiement par image :
+#   image : ghcr.io/imputnet/cobalt:11
+#   variable obligatoire : API_URL=https://<url-publique-assignee>/
+#   (voir infra/cobalt/README.md pour le guide complet pas a pas)
+
+services:
+    cobalt:
+        image: ghcr.io/imputnet/cobalt:11
+        init: true
+        read_only: true
+        restart: unless-stopped
+        container_name: cobalt
+
+        ports:
+            # derriere un reverse proxy (nginx/caddy), utilisez :
+            - 127.0.0.1:9000:9000
+            # exposition directe (sans reverse proxy) : - 9000:9000
+
+        environment:
+            # OBLIGATOIRE : l'URL publique de ton instance, avec "/" final.
+            # C'est exactement la valeur a mettre dans EXTRACT_API_URL.
+            API_URL: "https://TON-INSTANCE.EXAMPLE/"
+
+            # Duree maximale des videos acceptees, en secondes (3 h par defaut)
+            DURATION_LIMIT: "10800"
+
+            # Protection API par cle (fortement conseille si l'instance est publique) :
+            # 1) heberge un fichier keys.json comme celui ci-dessous (URL HTTPS publique)
+            # 2) cree un JWT_SECRET (openssl rand -hex 16)
+            # 3) decommente les 4 variables suivantes.
+            # Vous ajouterez ensuite EXTRACT_API_KEY=<ton mot de passe> dans SmartDownload.
+            #
+            API_KEY_URL: "https://TON-NOM-KEYS.EXAMPLE/keys.json"
+            API_AUTH_REQUIRED: "1"
+            JWT_SECRET: "CHANGE_MOI_SECRET_DE_16_CHARACTERS_MIN"
+            #
+            # LES CONFIGS DISABLED_SERVICES
+            # DISABLED_SERVICES: "twitter"
+
+        # Volume optionnel : cookies pour services exigeant une session (non requis
+        # pour les téléchargements publics YouTube/Facebook/TikTok de SmartDownload).
+        # volumes:
+        #    - ./cookies.json:/cookies.json
+        # environment += COOKIE_PATH: "/cookies.json"
+
+    # Mise a jour automatique de l'image cobalt (conserve de l'exemple officiel)
+    watchtower:
+        image: ghcr.io/containrrr/watchtower
+        restart: unless-stopped
+        command: --cleanup --scope cobalt --interval 900 --include-restarting
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        labels:
+            - com.centurylinklabs.watchtower.scope=cobalt
