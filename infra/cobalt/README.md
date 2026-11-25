@@ -34,6 +34,20 @@ d'installer ni Docker, ni Node.
 `ghcr.io/imputnet/cobalt:11` : Render (Web Service « Deploy an image »),
 Fly.io (`fly launch --image ghcr.io/imputnet/cobalt:11`), Koyeb, etc.
 
+## 1bis. Alternative 100 % gratuite : Hugging Face Spaces (aucune carte bancaire)
+
+Si tu ne veux pas utiliser Railway, host l'image sur un Space Hugging Face :
+
+1. Compte gratuit : https://huggingface.co/join (ton gmail convient)
+2. Nouveau Space : https://huggingface.co/new-space — SDK : **Docker**, nom : `cobalt`
+3. Copie le fichier [`infra/cobalt/huggingface-space/Dockerfile`](huggingface-space/Dockerfile)
+   dans le Space via "Files" → "Add file" (il contient les étapes 4-6 commentées
+   : variable `API_URL` à créer, puis les 2 variables SmartDownload).
+4. L'instance répond sur `https://<ton-user>-cobalt.hf.space/`.
+
+Note : le plan gratuit HF "dort" après ~48 h sans trafic (redémarrage auto à la
+première requête). Pour un service toujours réveillé, préfère Railway ou un VPS.
+
 ## 2. Sur ton propre VPS (le moins cher à l'usage)
 
 Un VPS à ~4 €/mois (OVH/Hetzner/Scaleway) suffit — attention toutefois,
