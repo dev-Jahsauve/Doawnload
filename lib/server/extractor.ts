@@ -39,7 +39,7 @@ function apiHeaders(extraAccept?: string): Record<string, string> {
   return headers;
 }
 
-async function extractViaCobalt(url: string, options: ExtractOptions): Promise<ExtractResult> {
+async function extractViaCobalt(base: string, url: string, options: ExtractOptions): Promise<ExtractResult> {
   const body: Record<string, unknown> = {
     url,
     downloadMode: options.kind === "audio" ? "audio" : "auto",
@@ -50,7 +50,7 @@ async function extractViaCobalt(url: string, options: ExtractOptions): Promise<E
     body.videoQuality = options.quality;
   }
 
-  const res = await fetch(process.env.EXTRACT_API_URL as string, {
+  const res = await fetch(base, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...apiHeaders() },
     body: JSON.stringify(body),
@@ -124,12 +124,53 @@ async function extractViaRapidApi(url: string, options: ExtractOptions): Promise
   return { url: (byQuality ?? mp4 ?? found[0]).value };
 }
 
+export function fallbackConfigured(): boolean {
+  return Boolean(process.env.EXTRACT_FALLBACK_URL);
+}
+
+export async function fetchFallbackInfo(
+  pageUrl: string,
+): Promise<{ title: string; duration: number; thumbnail: string } | null> {
+  if (!fallbackConfigured()) return null;
+  try {
+    const endpoint = new URL("info", process.env.EXTRACT_FALLBACK_URL as string);
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ url: pageUrl }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(45_000),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { title?: string; duration?: number; thumbnail?: string };
+    if (!data.title) return null;
+    return { title: data.title, duration: data.duration ?? 0, thumbnail: data.thumbnail ?? "" };
+  } catch {
+    return null;
+  }
+}
+
 export async function extractMediaUrl(pageUrl: string, options: ExtractOptions): Promise<ExtractResult> {
   if (!extractorConfigured()) {
     throw new ExtractError("Extracteur non configure.");
   }
-  if (process.env.EXTRACT_PROVIDER === "cobalt") {
-    return extractViaCobalt(pageUrl, options);
+  let primaryError: unknown = null;
+  try {
+    if (process.env.EXTRACT_PROVIDER === "cobalt") {
+      return await extractViaCobalt(process.env.EXTRACT_API_URL as string, pageUrl, options);
+    }
+    return await extractViaRapidApi(pageUrl, options);
+  } catch (err) {
+    primaryError = err;
   }
-  return extractViaRapidApi(pageUrl, options);
+  // Repli : service yt-dlp compatible Cobalt (ex. Facebook, qui exige une
+  // session pour etre accessible depuis une IP de datacenter).
+  if (fallbackConfigured()) {
+    try {
+      return await extractViaCobalt(process.env.EXTRACT_FALLBACK_URL as string, pageUrl, options);
+    } catch {
+      // les deux ont echoue : on remonte l'erreur primaire
+    }
+  }
+  throw primaryError;
 }

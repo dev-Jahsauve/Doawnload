@@ -1,0 +1,17 @@
+# Blueprint Render — service d'extraction yt-dlp de SmartDownload.
+# Deploiement : Render -> New + -> Blueprint -> choisir ce depot -> Apply.
+# Documentation complete : infra/ytdlp-service/README.md
+services:
+  - type: web
+    name: smartdownload-ytdlp
+    runtime: docker
+    dockerfilePath: ./infra/ytdlp-service/Dockerfile
+    dockerContext: ./infra/ytdlp-service
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: TUNNEL_SECRET
+        generateValue: true
+      - key: COOKIES_PATH
+        sync: false   # optionnel : /etc/secrets/facebook-cookies.txt (Secret File)

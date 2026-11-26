@@ -4,6 +4,7 @@
  */
 
 import { detectPlatform, type Platform } from "./validators";
+import { fetchFallbackInfo } from "./extractor";
 
 export interface MetadataResult {
   title: string;
@@ -25,6 +26,7 @@ export async function fetchMetadata(url: URL): Promise<MetadataResult> {
 
   let title = "Video partagee";
   let thumbnail = "";
+  let duration = 0;
 
   if (endpoint) {
     try {
@@ -39,5 +41,16 @@ export async function fetchMetadata(url: URL): Promise<MetadataResult> {
     }
   }
 
-  return { title, thumbnail, duration: 0, platform };
+  // Facebook n'a pas d'oEmbed public : on interroge le service yt-dlp de
+  // secours pour un vrai titre / une vraie duree (best-effort, jamais bloquant).
+  if (platform === "facebook") {
+    const info = await fetchFallbackInfo(url.toString());
+    if (info) {
+      title = info.title;
+      thumbnail = info.thumbnail || thumbnail;
+      duration = info.duration;
+    }
+  }
+
+  return { title, thumbnail, duration, platform };
 }
