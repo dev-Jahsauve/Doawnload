@@ -14,6 +14,11 @@ interface BannerAdProps {
  */
 export function BannerAd({ width = 728, height = 90, className = "" }: BannerAdProps) {
   const key = process.env.NEXT_PUBLIC_ADSTERRA_BANNER_KEY;
+  // Adsterra livre parfois l'invoke sur un domaine specifique au compte ;
+  // NEXT_PUBLIC_ADSTERRA_INVOKE_URL permet de fournir l'URL de l'extrait "Get Code".
+  const invokeUrl =
+    process.env.NEXT_PUBLIC_ADSTERRA_INVOKE_URL ??
+    `https://www.highperformanceformat.com/${key}/invoke.js`;
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,11 +33,11 @@ export function BannerAd({ width = 728, height = 90, className = "" }: BannerAdP
 
     const invoke = document.createElement("script");
     invoke.type = "text/javascript";
-    invoke.src = `//www.highperformanceformat.com/${key}/invoke.js`;
+    invoke.src = invokeUrl.replace(/^\\/\\/, "http$:");
     invoke.async = true;
 
     host.append(atOptions, invoke);
-  }, [key, width, height]);
+  }, [key, invokeUrl, width, height]);
 
   if (!key) return null;
 

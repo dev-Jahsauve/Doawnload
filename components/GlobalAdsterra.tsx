@@ -15,8 +15,20 @@ import Script from "next/script";
  * en local et en pre-production.
  */
 export default function GlobalAdsterra() {
-  const src = process.env.NEXT_PUBLIC_ADSTERRA_GLOBAL_SRC;
-  if (!src) return null;
+  const raw = process.env.NEXT_PUBLIC_ADSTERRA_GLOBAL_SRC;
+  if (!raw) return null;
 
-  return <Script data-cfasync="false" src={src} strategy="afterInteractive" />;
+  // Plusieurs scripts permis : separes par une virgule (Social Bar + Popunder...).
+  const sources = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  return (
+    <>
+      {sources.map((src) => (
+        <Script key={src} data-cfasync="false" src={src} strategy="afterInteractive" />
+      ))}
+    </>
+  );
 }

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import DownloadFlow from "@/components/DownloadFlow";
 import HeroBackground from "@/components/HeroBackground";
 import { BannerAd } from "@/components/BannerAd";
+import NativeBanner from "@/components/NativeBanner";
 
 const container = {
   hidden: {},
@@ -74,6 +75,8 @@ export default function HomePage() {
         <div className="mt-12 flex justify-center">
           <BannerAd width={728} height={90} className="w-full max-w-[728px]" />
         </div>
+
+        <NativeBanner />
       </div>
     </>
   );

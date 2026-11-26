@@ -15,7 +15,11 @@ interface InterstitialAdProps {
  * Un compte a rebours evite un clic accidentel et garantit l'exposition.
  */
 export default function InterstitialAd({ open, onComplete, onCancel }: InterstitialAdProps) {
-  const key = process.env.NEXT_PUBLIC_ADSTERRA_PRIORITY_KEY;
+  const key = process.env.NEXT_PUBLIC_ADSTERRA_PRIORITY_KEY ?? process.env.NEXT_PUBLIC_ADSTERRA_BANNER_KEY;
+  // solidarite avec la banner : invoke depuis le domaine du compte Adsterra si fourni
+  const invokeUrl =
+    process.env.NEXT_PUBLIC_ADSTERRA_INVOKE_URL ??
+    `https://www.highperformanceformat.com/${key}/invoke.js`;
   const hostRef = useRef<HTMLDivElement>(null);
   const [seconds, setSeconds] = useState(5);
   const [adSeen, setAdSeen] = useState(false);
@@ -51,7 +55,7 @@ export default function InterstitialAd({ open, onComplete, onCancel }: Interstit
 
     const invoke = document.createElement("script");
     invoke.type = "text/javascript";
-    invoke.src = `//www.highperformanceformat.com/${key}/invoke.js`;
+    invoke.src = invokeUrl.replace(/^\\/\\/, "http$:");
     invoke.async = true;
 
     host.append(atOptions, invoke);
