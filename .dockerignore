@@ -1,0 +1,9 @@
+node_modules/
+.next/
+server/
+downloads/
+.env*
+*.md
+.vercel/
+Dockerfile*
+docker-compose.yml
