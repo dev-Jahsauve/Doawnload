@@ -33,7 +33,7 @@ export function BannerAd({ width = 728, height = 90, className = "" }: BannerAdP
 
     const invoke = document.createElement("script");
     invoke.type = "text/javascript";
-    invoke.src = invokeUrl.replace(/^\\/\\/, "http$:");
+    invoke.src = invokeUrl;
     invoke.async = true;
 
     host.append(atOptions, invoke);

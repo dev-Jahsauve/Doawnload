@@ -55,11 +55,11 @@ export default function InterstitialAd({ open, onComplete, onCancel }: Interstit
 
     const invoke = document.createElement("script");
     invoke.type = "text/javascript";
-    invoke.src = invokeUrl.replace(/^\\/\\/, "http$:");
+    invoke.src = invokeUrl;
     invoke.async = true;
 
     host.append(atOptions, invoke);
-  }, [open, key]);
+  }, [open, key, invokeUrl]);
 
   return (
     <AnimatePresence>
