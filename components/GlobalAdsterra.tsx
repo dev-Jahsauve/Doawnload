@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { useAdConfig } from "../lib/useAdConfig";
 
 /**
  * Script publicitaire global Adsterra (Social Bar / Popunder).
@@ -15,14 +16,8 @@ import Script from "next/script";
  * en local et en pre-production.
  */
 export default function GlobalAdsterra() {
-  const raw = process.env.NEXT_PUBLIC_ADSTERRA_GLOBAL_SRC;
-  if (!raw) return null;
-
-  // Plusieurs scripts permis : separes par une virgule (Social Bar + Popunder...).
-  const sources = raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const { globalSrc: sources } = useAdConfig();
+  if (!sources.length) return null;
 
   return (
     <>

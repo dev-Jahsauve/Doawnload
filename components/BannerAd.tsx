@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useAdConfig } from "../lib/useAdConfig";
 
 interface BannerAdProps {
   width?: number;
@@ -13,12 +14,10 @@ interface BannerAdProps {
  * Active uniquement si une cle est fournie via NEXT_PUBLIC_ADSTERRA_BANNER_KEY.
  */
 export function BannerAd({ width = 728, height = 90, className = "" }: BannerAdProps) {
-  const key = process.env.NEXT_PUBLIC_ADSTERRA_BANNER_KEY;
+  const { bannerKey: key, invokeUrl: invokeFromEnv } = useAdConfig();
   // Adsterra livre parfois l'invoke sur un domaine specifique au compte ;
-  // NEXT_PUBLIC_ADSTERRA_INVOKE_URL permet de fournir l'URL de l'extrait "Get Code".
-  const invokeUrl =
-    process.env.NEXT_PUBLIC_ADSTERRA_INVOKE_URL ??
-    `https://www.highperformanceformat.com/${key}/invoke.js`;
+  // sinon on retombe sur le domaine public par defaut.
+  const invokeUrl = invokeFromEnv || `https://www.highperformanceformat.com/${key}/invoke.js`;
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

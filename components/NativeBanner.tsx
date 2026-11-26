@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useAdConfig } from "../lib/useAdConfig";
 
 /**
  * Native Banner Adsterra : un conteneur <div id="container-KEY"> rempli par un
@@ -10,7 +11,7 @@ import { useEffect } from "react";
  * Rien ne s'affiche tant que la variable n'est pas definie.
  */
 export default function NativeBanner() {
-  const src = process.env.NEXT_PUBLIC_ADSTERRA_NATIVE_SRC;
+  const { nativeSrc: src } = useAdConfig();
 
   useEffect(() => {
     if (!src) return;

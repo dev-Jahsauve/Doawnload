@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useAdConfig } from "../lib/useAdConfig";
 
 interface InterstitialAdProps {
   open: boolean;
@@ -15,11 +16,11 @@ interface InterstitialAdProps {
  * Un compte a rebours evite un clic accidentel et garantit l'exposition.
  */
 export default function InterstitialAd({ open, onComplete, onCancel }: InterstitialAdProps) {
-  const key = process.env.NEXT_PUBLIC_ADSTERRA_PRIORITY_KEY ?? process.env.NEXT_PUBLIC_ADSTERRA_BANNER_KEY;
-  // solidarite avec la banner : invoke depuis le domaine du compte Adsterra si fourni
-  const invokeUrl =
-    process.env.NEXT_PUBLIC_ADSTERRA_INVOKE_URL ??
-    `https://www.highperformanceformat.com/${key}/invoke.js`;
+  const { bannerKey, invokeUrl: invokeFromEnv } = useAdConfig();
+  // Priorite a la cle dediee si fournie, sinon solidarite avec la banner
+  const key = process.env.NEXT_PUBLIC_ADSTERRA_PRIORITY_KEY || bannerKey;
+  // invoke depuis le domaine du compte Adsterra si fourni, sinon domaine par defaut
+  const invokeUrl = invokeFromEnv || `https://www.highperformanceformat.com/${key}/invoke.js`;
   const hostRef = useRef<HTMLDivElement>(null);
   const [seconds, setSeconds] = useState(5);
   const [adSeen, setAdSeen] = useState(false);
