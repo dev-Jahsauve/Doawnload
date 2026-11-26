@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hors connexion · SmartDownload</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; margin: 0; }
+      body {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0a0a0b;
+        color: #f6f1e4;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        padding: 24px;
+        text-align: center;
+      }
+      .halo {
+        position: fixed;
+        width: 420px; height: 420px;
+        border-radius: 50%;
+        background: rgba(212, 175, 55, 0.10);
+        filter: blur(60px);
+        pointer-events: none;
+      }
+      .halo.a { top: -140px; left: -120px; }
+      .halo.b { bottom: -160px; right: -100px; background: rgba(212, 175, 55, 0.06); }
+      .card { position: relative; max-width: 380px; }
+      .badge {
+        width: 72px; height: 72px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: #d4af37;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .badge svg { width: 34px; height: 34px; }
+      h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+      p { margin-top: 10px; font-size: 14px; line-height: 1.6; color: rgba(246, 241, 228, 0.62); }
+      button {
+        margin-top: 22px;
+        padding: 11px 22px;
+        border: 0; border-radius: 12px;
+        background: #d4af37; color: #171310;
+        font-size: 14px; font-weight: 500;
+        cursor: pointer;
+      }
+      .sig {
+        margin-top: 26px;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(212, 175, 55, 0.55);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="halo a"></div>
+    <div class="halo b"></div>
+    <div class="card">
+      <div class="badge" aria-hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#171310" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v11" /><path d="m7 11 5 5 5-5" /><path d="M5 20h14" />
+        </svg>
+      </div>
+      <h1>Tu es hors connexion</h1>
+      <p>Impossible de charger cette page pour le moment. Reconnecte-toi à internet puis réessaie — tes réglages et ton historique local sont conservés.</p>
+      <button onclick="location.reload()">Réessayer</button>
+      <div class="sig">Eddition Smartebooks</div>
+    </div>
+  </body>
+</html>
