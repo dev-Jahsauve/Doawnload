@@ -1,0 +1,38 @@
+{
+ "k1": {
+  "wav": "/tmp/promo/k1-v7.wav",
+  "dur": 8.28
+ },
+ "k2": {
+  "wav": "/tmp/promo/k2-v7.wav",
+  "dur": 4.94
+ },
+ "k3": {
+  "wav": "/tmp/promo/k3-v7.wav",
+  "dur": 3.84
+ },
+ "k4": {
+  "wav": "/tmp/promo/k4-v7.wav",
+  "dur": 4.54
+ },
+ "k5": {
+  "wav": "/tmp/promo/k5-v7.wav",
+  "dur": 9.86
+ },
+ "k6": {
+  "wav": "/tmp/promo/k6-v7.wav",
+  "dur": 3.48
+ },
+ "k7": {
+  "wav": "/tmp/promo/k7-v7.wav",
+  "dur": 7.25
+ },
+ "k8": {
+  "wav": "/tmp/promo/k8-v7.wav",
+  "dur": 5.28
+ },
+ "k9": {
+  "wav": "/tmp/promo/k9-v7.wav",
+  "dur": 10.63
+ }
+}
