@@ -155,6 +155,7 @@ export async function extractMediaUrl(pageUrl: string, options: ExtractOptions):
     throw new ExtractError("Extracteur non configure.");
   }
   let primaryError: unknown = null;
+  let fallbackError: unknown = null;
   try {
     if (process.env.EXTRACT_PROVIDER === "cobalt") {
       return await extractViaCobalt(process.env.EXTRACT_API_URL as string, pageUrl, options);
@@ -168,9 +169,15 @@ export async function extractMediaUrl(pageUrl: string, options: ExtractOptions):
   if (fallbackConfigured()) {
     try {
       return await extractViaCobalt(process.env.EXTRACT_FALLBACK_URL as string, pageUrl, options);
-    } catch {
-      // les deux ont echoue : on remonte l'erreur primaire
+    } catch (err) {
+      fallbackError = err;
     }
+  }
+  if (fallbackError) {
+    const describe = (e: unknown) => (e instanceof Error ? e.message : "erreur inconnue");
+    throw new ExtractError(
+      `Le service d'extraction a refuse ce lien (principal : ${describe(primaryError)} ; repli : ${describe(fallbackError)}).`,
+    );
   }
   throw primaryError;
 }
