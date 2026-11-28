@@ -59,7 +59,7 @@ export default function HomePage() {
           </motion.div>
 
           <div className="mt-9">
-            <DownloadFlow onDownloadSettled={() => setAdHidden(true)} onReset={() => setAdHidden(false)} />
+            <DownloadFlow onDownloadCompleted={() => setAdHidden(true)} onReset={() => setAdHidden(false)} />
           </div>
 
           <div className="mt-10">

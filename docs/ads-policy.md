@@ -5,15 +5,15 @@
 Le téléchargement est **100 % gratuit** : aucune publicité n'est une condition
 préalable, aucun compte à rebours, aucun paiement. La monétisation repose sur un
 seul emplacement discret — le **Native Banner Adsterra** — placé sous la zone de
-travail (sous la barre de recherche à l'arrivée, sous les résultats pendant le
-choix du format), et **masqué dès la fin effective d'un téléchargement**, jusqu'à
-la prochaine opération.
+travail, **visible en continu pendant toute l'opération** (arrivée, analyse,
+choix du format, téléchargement) et **masqué uniquement une fois le fichier
+réellement obtenu** (fin confirmée côté serveur), jusqu'à la prochaine analyse.
 
 ## Formats utilisés et retirés
 
 | Format          | État     | Détail                                                                                                                         |
 | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Native Banner   | ✅ Actif | Slot unique `components/NativeBanner.tsx`, hauteur réservée (anti-CLS), une seule charge par session, masqué après téléchargement |
+| Native Banner   | ✅ Actif | Slot unique `components/NativeBanner.tsx`, hauteur réservée (anti-CLS), une seule charge par page, visible pendant toute l'opération, masqué après la fin confirmée du téléchargement |
 | Social Bar      | ❌ Retiré | `components/GlobalAdsterra.tsx` supprimé : plus aucune notification flottante ni overlay                                      |
 | Popunder        | ❌ Retiré | Plus aucun nouvel onglet automatique                                                                                           |
 | Bannière iframe | ❌ Retiré | `components/BannerAd.tsx` supprimé (remplacé par le Native Banner)                                                             |
@@ -59,10 +59,12 @@ demander à Adsterra l'exclusion de l'annonceur/campagne concernée.
 ## Fin de téléchargement : ce qui est réellement détectable
 
 - **Mode taches (backend Fastify/BullMQ)** : la fin est **fiable côté serveur**
-  (état `completed` du job) — c'est la voie de référence.
+  (état `completed` du job) — c'est la voie de référence : l'espace publicitaire
+  est masqué à ce moment précis.
 - **Mode direct (serverless Vercel)** : le fichier transite par un tunnel tiers,
-  le navigateur n'expose aucun événement de fin de téléchargement. Le site
-  considère l'opération réglée au retour de visibilité/focus de l'onglet, avec un
-  repli à 60 s. C'est un **meilleur effort assumé** : le libellé affiché («
+  le navigateur n'expose aucun événement de fin de téléchargement. Comme la fin
+  réelle n'est pas confirmable, **l'espace publicitaire n'est jamais masqué sur
+  une supposition** : il reste en place jusqu'à ce que l'utilisateur lance une
+  nouvelle opération (bouton « Nouveau téléchargement »). Le libellé affiché («
   Fichier prêt, téléchargement lancé ») ne prétend pas confirmer la réception
   complète du fichier.

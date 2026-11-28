@@ -13,11 +13,14 @@ import { ArrowDownIcon, LinkIcon } from "./icons";
 type Phase = "idle" | "analyzing" | "ready" | "working" | "done";
 
 interface DownloadFlowProps {
-  onDownloadSettled?: () => void;
+  // Signale uniquement une fin de telechargement CONFIRMEE cote serveur (mode
+  // taches). En mode direct la fin reelle est indetectable : la publicite reste
+  // donc en place jusqu'au reset, jamais masquee avant la fin effective.
+  onDownloadCompleted?: () => void;
   onReset?: () => void;
 }
 
-export default function DownloadFlow({ onDownloadSettled, onReset }: DownloadFlowProps) {
+export default function DownloadFlow({ onDownloadCompleted, onReset }: DownloadFlowProps) {
   const [url, setUrl] = useState("");
   const [info, setInfo] = useState<VideoInfo | null>(null);
   const [format, setFormat] = useState<VideoFormat | null>(null);
@@ -60,8 +63,7 @@ export default function DownloadFlow({ onDownloadSettled, onReset }: DownloadFlo
     directSettledRef.current = true;
     clearDirectWatch();
     setPhase("done");
-    onDownloadSettled?.();
-  }, [clearDirectWatch, onDownloadSettled]);
+  }, [clearDirectWatch]);
 
   const watchDirectDownload = useCallback(() => {
     directSettledRef.current = false;
@@ -96,7 +98,6 @@ export default function DownloadFlow({ onDownloadSettled, onReset }: DownloadFlo
       if ("direct" in response && response.url) {
         addHistory({ title: info.title, format: format.label, thumbnail: info.thumbnail, url });
         setPhase("done");
-        onDownloadSettled?.();
         window.location.href = response.url;
         watchDirectDownload();
         return;
@@ -114,7 +115,7 @@ export default function DownloadFlow({ onDownloadSettled, onReset }: DownloadFlo
             stopPolling();
             addHistory({ title: info.title, format: format.label, thumbnail: info.thumbnail, url });
             setPhase("done");
-            onDownloadSettled?.();
+            onDownloadCompleted?.();
             window.location.href = `/api/jobs/${jobId}/file`;
           } else if (job.state === "failed") {
             stopPolling();
@@ -130,7 +131,7 @@ export default function DownloadFlow({ onDownloadSettled, onReset }: DownloadFlo
       setError(err instanceof ApiError ? err.message : "Connexion au serveur impossible.");
       setPhase("ready");
     }
-  }, [format, info, onDownloadSettled, url, watchDirectDownload]);
+  }, [format, info, onDownloadCompleted, url, watchDirectDownload]);
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
