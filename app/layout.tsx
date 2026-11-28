@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
 import Footer from "@/components/Footer";
-import GlobalAdsterra from "@/components/GlobalAdsterra";
 import InstallPwa from "@/components/InstallPwa";
 import Logo from "@/components/Logo";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
@@ -64,7 +63,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
 
         <main className="flex-1">{children}</main>
-        <GlobalAdsterra />
         <Footer />
       </body>
     </html>

@@ -1,28 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAdConfig } from "../lib/useAdConfig";
 
 /**
- * Native Banner Adsterra : un conteneur <div id="container-KEY"> rempli par un
- * script asynchrone. L'URL du script vient de NEXT_PUBLIC_ADSTERRA_NATIVE_SRC
+ * Native Banner Adsterra : emplacement publicitaire principal, discret, sous la
+ * zone de travail. L'URL du script vient de NEXT_PUBLIC_ADSTERRA_NATIVE_SRC
  * (ex : https://bellnewyork.org/21/68facc31adf1bf0509424094944fe952) et
  * l'identifiant du conteneur se derive du dernier segment de l'URL.
- * Rien ne s'affiche tant que la variable n'est pas definie.
+ *
+ * - Hauteur minimale reservee pour eviter tout deplacement de la page (CLS).
+ * - Une seule charge par session : le script n'est jamais re-injecte, le
+ *   masquage apres la fin d'un telechargement se fait par attribut hidden.
+ * - Rien ne s'affiche tant que la variable n'est pas definie.
  */
-export default function NativeBanner() {
+interface NativeBannerProps {
+  hidden?: boolean;
+}
+
+export default function NativeBanner({ hidden = false }: NativeBannerProps) {
   const { nativeSrc: src } = useAdConfig();
+  const injectedRef = useRef(false);
 
   useEffect(() => {
-    if (!src) return;
+    if (!src || injectedRef.current) return;
     const key = src.split("/").filter(Boolean).pop();
     if (!key) return;
-    // (re)initialise le conteneur puis injecte le script une seule fois
     const host = document.getElementById("smartdownload-native-ad");
     if (!host) return;
+    injectedRef.current = true;
     const container = document.createElement("div");
     container.id = `container-${key}`;
-    host.innerHTML = "";
     host.appendChild(container);
     const s = document.createElement("script");
     s.async = true;
@@ -34,8 +42,11 @@ export default function NativeBanner() {
   if (!src) return null;
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8" aria-label="Publicité">
-      <div id="smartdownload-native-ad" className="overflow-hidden rounded-2xl border border-line" />
-    </div>
+    <aside hidden={hidden} aria-label="Publicité" className="mx-auto w-full max-w-2xl">
+      <p className="mb-1.5 text-center text-[10px] font-medium uppercase tracking-[0.2em] text-muted">Publicité</p>
+      <div className="overflow-hidden rounded-2xl border border-line bg-card">
+        <div id="smartdownload-native-ad" className="min-h-[220px] sm:min-h-[190px]" />
+      </div>
+    </aside>
   );
 }

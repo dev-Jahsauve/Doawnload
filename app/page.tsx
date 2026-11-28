@@ -1,9 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import DownloadFlow from "@/components/DownloadFlow";
 import HeroBackground from "@/components/HeroBackground";
-import { BannerAd } from "@/components/BannerAd";
 import NativeBanner from "@/components/NativeBanner";
 
 const container = {
@@ -17,6 +17,10 @@ const item = {
 };
 
 export default function HomePage() {
+  // L'espace publicitaire accompagne l'utilisation du service, puis disparait
+  // des la fin effective d'un telechargement (signal du flux) jusqu'au reset.
+  const [adHidden, setAdHidden] = useState(false);
+
   return (
     <>
       <HeroBackground />
@@ -55,7 +59,11 @@ export default function HomePage() {
           </motion.div>
 
           <div className="mt-9">
-            <DownloadFlow />
+            <DownloadFlow onDownloadSettled={() => setAdHidden(true)} onReset={() => setAdHidden(false)} />
+          </div>
+
+          <div className="mt-10">
+            <NativeBanner hidden={adHidden} />
           </div>
 
           <motion.ul
@@ -71,12 +79,6 @@ export default function HomePage() {
             <li>Toutes les grandes plateformes de vidéo prises en charge</li>
           </motion.ul>
         </section>
-
-        <div className="mt-12 flex justify-center">
-          <BannerAd width={728} height={90} className="w-full max-w-[728px]" />
-        </div>
-
-        <NativeBanner />
       </div>
     </>
   );
