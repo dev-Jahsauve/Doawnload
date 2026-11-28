@@ -50,16 +50,32 @@ export default function InterstitialAd({ open, onComplete, onCancel }: Interstit
 
     host.innerHTML = "";
 
-    const atOptions = document.createElement("script");
-    atOptions.type = "text/javascript";
-    atOptions.text = `atOptions = { key: '${key}', format: 'iframe', height: 250, width: 300, params: {} };`;
+    // invoke.js ecrit la creation via document.write : invalide dans le document
+    // principal apres chargement. Injection dans une iframe isolee.
+    const iframe = document.createElement("iframe");
+    iframe.width = "300";
+    iframe.height = "250";
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("scrolling", "no");
+    iframe.setAttribute("title", "Publicité");
+    iframe.style.border = "0";
+    iframe.style.display = "block";
+    host.appendChild(iframe);
 
-    const invoke = document.createElement("script");
-    invoke.type = "text/javascript";
-    invoke.src = invokeUrl;
-    invoke.async = true;
-
-    host.append(atOptions, invoke);
+    const doc = iframe.contentDocument;
+    if (doc) {
+      doc.open();
+      doc.write(
+        `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"></head>` +
+          `<body style="margin:0;padding:0">` +
+          `<script type="text/javascript">atOptions = { key: '${key}', format: 'iframe', height: 250, width: 300, params: {} };</` +
+          `script>` +
+          `<script type="text/javascript" src="${invokeUrl}"></` +
+          `script>` +
+          `</body></html>`,
+      );
+      doc.close();
+    }
   }, [open, key, invokeUrl]);
 
   return (
