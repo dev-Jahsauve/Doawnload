@@ -6,15 +6,18 @@ import { ApiError, api, type VideoFormat, type VideoInfo } from "@/lib/api";
 import { isSupportedUrl } from "@/lib/platforms";
 import { addHistory } from "@/lib/history";
 import { BrandSignature } from "./BrandSignature";
-import ChoiceModal from "./ChoiceModal";
-import InterstitialAd from "./InterstitialAd";
 import ProgressBar from "./ProgressBar";
 import VideoPreview from "./VideoPreview";
 import { ArrowDownIcon, LinkIcon } from "./icons";
 
-type Phase = "idle" | "analyzing" | "ready" | "ad" | "working" | "done";
+type Phase = "idle" | "analyzing" | "ready" | "working" | "done";
 
-export default function DownloadFlow() {
+interface DownloadFlowProps {
+  onDownloadSettled?: () => void;
+  onReset?: () => void;
+}
+
+export default function DownloadFlow({ onDownloadSettled, onReset }: DownloadFlowProps) {
   const [url, setUrl] = useState("");
   const [info, setInfo] = useState<VideoInfo | null>(null);
   const [format, setFormat] = useState<VideoFormat | null>(null);
@@ -23,8 +26,10 @@ export default function DownloadFlow() {
   const [error, setError] = useState("");
   const jobIdRef = useRef<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const directCleanupRef = useRef<(() => void) | null>(null);
+  const directSettledRef = useRef(false);
 
-  // Pré-remplissage depuis /?url=... (utilise notamment par la page Historique).
+  // Pré-remplissage depuis /?url=... (utilisé notamment par la page Historique).
   useEffect(() => {
     const initial = new URLSearchParams(window.location.search).get("url");
     if (initial && isSupportedUrl(initial)) setUrl(initial);
@@ -39,59 +44,93 @@ export default function DownloadFlow() {
 
   useEffect(() => stopPolling, []);
 
-  const startDownload = useCallback(
-    async (priority: boolean) => {
-      if (!info || !format) return;
-      setPhase("working");
-      setError("");
-      setProgress(0);
+  const clearDirectWatch = useCallback(() => {
+    directCleanupRef.current?.();
+    directCleanupRef.current = null;
+  }, []);
 
-      try {
-        const response = await api.requestDownload({
-          url,
-          formatId: format.id,
-          priority,
-          title: info.title,
-        });
+  useEffect(() => clearDirectWatch, [clearDirectWatch]);
 
-        // Mode serverless (Vercel) : l'extracteur renvoie un lien direct, sans tache ni polling.
-        if ("direct" in response && response.url) {
-          addHistory({ title: info.title, format: format.label, thumbnail: info.thumbnail, url });
-          setPhase("done");
-          window.location.href = response.url;
-          return;
-        }
+  // Mode direct (serverless) : le fichier transite par un tiers, aucun signal
+  // navigateur n'atteste la fin reelle du transfert. Le retour de visibilite ou
+  // de focus apres le lancement sert de signal "meilleur effort" (limite
+  // documentee dans docs/ads-policy.md) ; le mode taches reste la voie fiable.
+  const settleDirect = useCallback(() => {
+    if (directSettledRef.current) return;
+    directSettledRef.current = true;
+    clearDirectWatch();
+    setPhase("done");
+    onDownloadSettled?.();
+  }, [clearDirectWatch, onDownloadSettled]);
 
-        const { jobId } = response as { jobId: string };
-        jobIdRef.current = jobId;
+  const watchDirectDownload = useCallback(() => {
+    directSettledRef.current = false;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") settleDirect();
+    };
+    window.addEventListener("pageshow", settleDirect);
+    window.addEventListener("focus", settleDirect);
+    document.addEventListener("visibilitychange", onVisible);
+    directCleanupRef.current = () => {
+      window.removeEventListener("pageshow", settleDirect);
+      window.removeEventListener("focus", settleDirect);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+    window.setTimeout(settleDirect, 60_000);
+  }, [settleDirect]);
 
-        const poll = setInterval(async () => {
-          try {
-            const job = await api.job(jobId);
-            setProgress(typeof job.progress === "number" ? Math.max(0, Math.min(100, job.progress)) : 0);
+  const startDownload = useCallback(async () => {
+    if (!info || !format) return;
+    setPhase("working");
+    setError("");
+    setProgress(0);
 
-            if (job.state === "completed" && job.result) {
-              stopPolling();
-              addHistory({ title: info.title, format: format.label, thumbnail: info.thumbnail, url });
-              setPhase("done");
-              window.location.href = `/api/jobs/${jobId}/file`;
-            } else if (job.state === "failed") {
-              stopPolling();
-              setError(job.failedReason || "Le téléchargement a échoué.");
-              setPhase("ready");
-            }
-          } catch {
-            // erreur réseau passagère : le prochain tick reessaie
-          }
-        }, 1200);
-        pollRef.current = poll;
-      } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Connexion au serveur impossible.");
-        setPhase("ready");
+    try {
+      const response = await api.requestDownload({
+        url,
+        formatId: format.id,
+        title: info.title,
+      });
+
+      // Mode serverless (Vercel) : l'extracteur renvoie un lien direct, sans tache ni polling.
+      if ("direct" in response && response.url) {
+        addHistory({ title: info.title, format: format.label, thumbnail: info.thumbnail, url });
+        setPhase("done");
+        onDownloadSettled?.();
+        window.location.href = response.url;
+        watchDirectDownload();
+        return;
       }
-    },
-    [format, info, url],
-  );
+
+      const { jobId } = response as { jobId: string };
+      jobIdRef.current = jobId;
+
+      const poll = setInterval(async () => {
+        try {
+          const job = await api.job(jobId);
+          setProgress(typeof job.progress === "number" ? Math.max(0, Math.min(100, job.progress)) : 0);
+
+          if (job.state === "completed" && job.result) {
+            stopPolling();
+            addHistory({ title: info.title, format: format.label, thumbnail: info.thumbnail, url });
+            setPhase("done");
+            onDownloadSettled?.();
+            window.location.href = `/api/jobs/${jobId}/file`;
+          } else if (job.state === "failed") {
+            stopPolling();
+            setError(job.failedReason || "Le téléchargement a échoué.");
+            setPhase("ready");
+          }
+        } catch {
+          // erreur réseau passagère : le prochain tick réessaie
+        }
+      }, 1200);
+      pollRef.current = poll;
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Connexion au serveur impossible.");
+      setPhase("ready");
+    }
+  }, [format, info, onDownloadSettled, url, watchDirectDownload]);
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,20 +160,21 @@ export default function DownloadFlow() {
 
   const reset = () => {
     stopPolling();
+    clearDirectWatch();
+    directSettledRef.current = false;
     setUrl("");
     setInfo(null);
     setFormat(null);
     setProgress(0);
     setError("");
     setPhase("idle");
+    onReset?.();
   };
 
   const pickFormat = (f: VideoFormat) => {
     setFormat(f);
     setError("");
   };
-
-  const readyToSwitch = phase === "ready" && format !== null;
 
   return (
     <div className="w-full">
@@ -184,7 +224,7 @@ export default function DownloadFlow() {
               ) : (
                 <>
                   <ArrowDownIcon className="h-4 w-4" />
-                  Télécharger
+                  Analyser
                 </>
               )}
             </motion.button>
@@ -215,6 +255,30 @@ export default function DownloadFlow() {
         {info && phase === "ready" && <VideoPreview info={info} busy={false} onPick={pickFormat} />}
       </AnimatePresence>
 
+      {info && phase === "ready" && (
+        <motion.div
+          key="free-download"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4"
+        >
+          <motion.button
+            type="button"
+            disabled={!format}
+            onClick={() => void startDownload()}
+            whileHover={format ? { scale: 1.02 } : undefined}
+            whileTap={format ? { scale: 0.97 } : undefined}
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-accent font-semibold text-[color:var(--accent-ink)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ArrowDownIcon className="h-5 w-5" />
+            Télécharger gratuitement
+          </motion.button>
+          <p className="mt-2 text-center text-xs text-muted">
+            {format ? `Format sélectionné : ${format.label}` : "Choisis d'abord une qualité ci-dessus."}
+          </p>
+        </motion.div>
+      )}
+
       {error && (
         <motion.p
           key="error"
@@ -226,28 +290,6 @@ export default function DownloadFlow() {
           {error}
         </motion.p>
       )}
-
-      <ChoiceModal
-        open={readyToSwitch}
-        onStandard={() => {
-          setPhase("working");
-          void startDownload(false);
-        }}
-        onPriority={() => setPhase("ad")}
-        onClose={() => setFormat(null)}
-      />
-
-      <InterstitialAd
-        open={phase === "ad"}
-        onComplete={() => {
-          setPhase("working");
-          void startDownload(true);
-        }}
-        onCancel={() => {
-          setPhase("ready");
-          setFormat(null);
-        }}
-      />
     </div>
   );
 }

@@ -51,7 +51,7 @@ export interface DirectDownload {
 
 export const api = {
   analyze: (url: string) => send<{ info: VideoInfo }>("/api/analyze", { url }),
-  requestDownload: (payload: { url: string; formatId: string; priority: boolean; title?: string }) =>
+  requestDownload: (payload: { url: string; formatId: string; title?: string }) =>
     send<{ jobId: string } | DirectDownload>("/api/download", payload),
   async job(jobId: string): Promise<JobState> {
     const res = await fetch(`/api/jobs/${jobId}`);
